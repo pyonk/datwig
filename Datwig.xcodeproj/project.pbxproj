@@ -1,0 +1,395 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100100012C1A000100000001 /* DatwigApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200012C1A000100000001 /* DatwigApp.swift */; };
+		100100022C1A000100000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200022C1A000100000002 /* ContentView.swift */; };
+		100100032C1A000100000003 /* DirectoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200032C1A000100000003 /* DirectoryPicker.swift */; };
+		100100042C1A000100000004 /* DateOrganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200042C1A000100000004 /* DateOrganizer.swift */; };
+		100100052C1A000100000005 /* ExifParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200052C1A000100000005 /* ExifParser.swift */; };
+		100100062C1A000100000006 /* OrganizationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200062C1A000100000006 /* OrganizationSettings.swift */; };
+		100100072C1A000100000007 /* DuplicateResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200072C1A000100000007 /* DuplicateResolver.swift */; };
+		100100082C1A000100000008 /* FileScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200082C1A000100000008 /* FileScanner.swift */; };
+		100100092C1A000100000009 /* MediaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100200092C1A000100000009 /* MediaItem.swift */; };
+		1001000A2C1A00010000000A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1002000A2C1A00010000000A /* SettingsView.swift */; };
+		200100012C1A000100000001 /* ExifParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200200012C1A000100000001 /* ExifParserTests.swift */; };
+		200100022C1A000100000002 /* DateOrganizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200200022C1A000100000002 /* DateOrganizerTests.swift */; };
+		200100032C1A000100000003 /* DuplicateResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200200032C1A000100000003 /* DuplicateResolverTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		200300012C1A000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000100002C1A000100000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000002C1A000100000001;
+			remoteInfo = Datwig;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		100000012C1A000100000001 /* Datwig.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Datwig.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		100200012C1A000100000001 /* DatwigApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatwigApp.swift; sourceTree = "<group>"; };
+		100200022C1A000100000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		100200032C1A000100000003 /* DirectoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryPicker.swift; sourceTree = "<group>"; };
+		100200042C1A000100000004 /* DateOrganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateOrganizer.swift; sourceTree = "<group>"; };
+		100200052C1A000100000005 /* ExifParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifParser.swift; sourceTree = "<group>"; };
+		100200062C1A000100000006 /* OrganizationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizationSettings.swift; sourceTree = "<group>"; };
+		100200072C1A000100000007 /* DuplicateResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateResolver.swift; sourceTree = "<group>"; };
+		100200082C1A000100000008 /* FileScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileScanner.swift; sourceTree = "<group>"; };
+		100200092C1A000100000009 /* MediaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaItem.swift; sourceTree = "<group>"; };
+		1002000A2C1A00010000000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1002000B2C1A00010000000B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1002000C2C1A00010000000C /* Datwig.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Datwig.entitlements; sourceTree = "<group>"; };
+		200000012C1A000100000001 /* DatwigTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatwigTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		200200012C1A000100000001 /* ExifParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExifParserTests.swift; sourceTree = "<group>"; };
+		200200022C1A000100000002 /* DateOrganizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateOrganizerTests.swift; sourceTree = "<group>"; };
+		200200032C1A000100000003 /* DuplicateResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateResolverTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		100000022C1A000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		200000022C1A000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000100012C1A000100000001 = {
+			isa = PBXGroup;
+			children = (
+				000100022C1A000100000001 /* Sources */,
+				000100032C1A000100000001 /* Tests */,
+				000100042C1A000100000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000100022C1A000100000001 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				100200012C1A000100000001 /* DatwigApp.swift */,
+				100200022C1A000100000002 /* ContentView.swift */,
+				100200032C1A000100000003 /* DirectoryPicker.swift */,
+				100200042C1A000100000004 /* DateOrganizer.swift */,
+				100200052C1A000100000005 /* ExifParser.swift */,
+				100200062C1A000100000006 /* OrganizationSettings.swift */,
+				100200072C1A000100000007 /* DuplicateResolver.swift */,
+				100200082C1A000100000008 /* FileScanner.swift */,
+				100200092C1A000100000009 /* MediaItem.swift */,
+				1002000A2C1A00010000000A /* SettingsView.swift */,
+				1002000B2C1A00010000000B /* Info.plist */,
+				1002000C2C1A00010000000C /* Datwig.entitlements */,
+			);
+			path = Sources/Datwig;
+			sourceTree = "<group>";
+		};
+		000100032C1A000100000001 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				200200012C1A000100000001 /* ExifParserTests.swift */,
+				200200022C1A000100000002 /* DateOrganizerTests.swift */,
+				200200032C1A000100000003 /* DuplicateResolverTests.swift */,
+			);
+			path = Tests/DatwigTests;
+			sourceTree = "<group>";
+		};
+		000100042C1A000100000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				100000012C1A000100000001 /* Datwig.app */,
+				200000012C1A000100000001 /* DatwigTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		100000002C1A000100000001 /* Datwig */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 100300002C1A000100000001 /* Build configuration list for PBXNativeTarget "Datwig" */;
+			buildPhases = (
+				100000032C1A000100000001 /* Sources */,
+				100000022C1A000100000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Datwig;
+			productName = Datwig;
+			productReference = 100000012C1A000100000001 /* Datwig.app */;
+			productType = "com.apple.product-type.application";
+		};
+		200000002C1A000100000001 /* DatwigTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 200300002C1A000100000001 /* Build configuration list for PBXNativeTarget "DatwigTests" */;
+			buildPhases = (
+				200000032C1A000100000001 /* Sources */,
+				200000022C1A000100000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				200400012C1A000100000001 /* PBXTargetDependency */,
+			);
+			name = DatwigTests;
+			productName = DatwigTests;
+			productReference = 200000012C1A000100000001 /* DatwigTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000100002C1A000100000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					100000002C1A000100000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					200000002C1A000100000001 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 100000002C1A000100000001;
+					};
+				};
+			};
+			buildConfigurationList = 000300002C1A000100000001 /* Build configuration list for PBXProject "Datwig" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000100012C1A000100000001;
+			productRefGroup = 000100042C1A000100000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				100000002C1A000100000001 /* Datwig */,
+				200000002C1A000100000001 /* DatwigTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		100000032C1A000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100100012C1A000100000001 /* DatwigApp.swift in Sources */,
+				100100022C1A000100000002 /* ContentView.swift in Sources */,
+				100100032C1A000100000003 /* DirectoryPicker.swift in Sources */,
+				100100042C1A000100000004 /* DateOrganizer.swift in Sources */,
+				100100052C1A000100000005 /* ExifParser.swift in Sources */,
+				100100062C1A000100000006 /* OrganizationSettings.swift in Sources */,
+				100100072C1A000100000007 /* DuplicateResolver.swift in Sources */,
+				100100082C1A000100000008 /* FileScanner.swift in Sources */,
+				100100092C1A000100000009 /* MediaItem.swift in Sources */,
+				1001000A2C1A00010000000A /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		200000032C1A000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				200100012C1A000100000001 /* ExifParserTests.swift in Sources */,
+				200100022C1A000100000002 /* DateOrganizerTests.swift in Sources */,
+				200100032C1A000100000003 /* DuplicateResolverTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		200400012C1A000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 100000002C1A000100000001 /* Datwig */;
+			targetProxy = 200300012C1A000100000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		000200012C1A000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		000200022C1A000100000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		100200012C1A000100000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Datwig/Datwig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Datwig/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pyonk.datwig;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		100200022C1A000100000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Datwig/Datwig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Datwig/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pyonk.datwig;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		200200012C1A000100000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pyonk.datwigTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Datwig.app/Contents/MacOS/Datwig";
+			};
+			name = Debug;
+		};
+		200200022C1A000100000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pyonk.datwigTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Datwig.app/Contents/MacOS/Datwig";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000300002C1A000100000001 /* Build configuration list for PBXProject "Datwig" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000200012C1A000100000001 /* Debug */,
+				000200022C1A000100000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		100300002C1A000100000001 /* Build configuration list for PBXNativeTarget "Datwig" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				100200012C1A000100000011 /* Debug */,
+				100200022C1A000100000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		200300002C1A000100000001 /* Build configuration list for PBXNativeTarget "DatwigTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				200200012C1A000100000021 /* Debug */,
+				200200022C1A000100000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 000100002C1A000100000001 /* Project object */;
+}
