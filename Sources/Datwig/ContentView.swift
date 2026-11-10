@@ -36,9 +36,7 @@ public struct ContentView: View {
 
     private var headerBar: some View {
         HStack(spacing: 12) {
-            Image(systemName: "camera.macro")
-                .font(.title2)
-                .foregroundStyle(.tint)
+            DatwigIconView(size: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
@@ -472,5 +470,51 @@ public struct ContentView: View {
         case .failed:
             return .red
         }
+    }
+}
+
+/// Renders the official Datwig app icon, with graceful fallback to system symbols.
+public struct DatwigIconView: View {
+    public var size: CGFloat
+
+    public init(size: CGFloat = 36) {
+        self.size = size
+    }
+
+    public var body: some View {
+        if let icon = loadAppIcon() {
+            Image(nsImage: icon)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+                .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+                    .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
+
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: size * 0.5))
+                    .foregroundStyle(.tint)
+            }
+            .frame(width: size, height: size)
+        }
+    }
+
+    private func loadAppIcon() -> NSImage? {
+        if let image = NSImage(named: "AppIcon") {
+            return image
+        }
+        if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        return nil
     }
 }

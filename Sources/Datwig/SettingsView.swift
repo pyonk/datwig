@@ -155,11 +155,7 @@ public struct SettingsView: View {
 
     private var aboutTab: some View {
         VStack(spacing: 14) {
-            Image(systemName: "camera.macro")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 44, height: 44)
-                .foregroundStyle(.tint)
+            DatwigIconView(size: 64)
 
             VStack(spacing: 4) {
                 Text("Datwig")

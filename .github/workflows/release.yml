@@ -52,9 +52,12 @@ jobs:
             cp "$BIN_PATH/Datwig" "$APP_PATH/Contents/MacOS/Datwig"
           fi
 
-          # 2. Ensure bundle metadata & PkgInfo
+          # 2. Ensure bundle metadata & PkgInfo & AppIcon
           cp Sources/Datwig/Info.plist "$APP_PATH/Contents/Info.plist"
           echo -n "APPL????" > "$APP_PATH/Contents/PkgInfo"
+          mkdir -p "$APP_PATH/Contents/Resources"
+          cp Sources/Datwig/Resources/AppIcon.icns "$APP_PATH/Contents/Resources/AppIcon.icns"
+          cp Sources/Datwig/Resources/AppIcon.png "$APP_PATH/Contents/Resources/AppIcon.png"
           chmod +x "$APP_PATH/Contents/MacOS/Datwig"
 
           # 3. Apply ad-hoc code signature (required by macOS arm64 gatekeeper)

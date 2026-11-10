@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Sources/Datwig/Resources/AppIcon.png" width="120" height="120" alt="Datwig Icon" style="border-radius: 26px;" />
+</p>
+
 # Datwig
 
 <p align="center">
