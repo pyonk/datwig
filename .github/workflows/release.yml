@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p build/Release dist
 
-          # Build release target using xcodebuild
+          # 1. Build application bundle
           if xcodebuild clean build \
             -project Datwig.xcodeproj \
             -scheme Datwig \
@@ -42,26 +42,37 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CONFIGURATION_BUILD_DIR="./build/Release"; then
             echo "Xcode build succeeded."
-            cd build/Release
-            zip -ry "../../dist/Datwig-macOS.zip" Datwig.app
-            cd ../..
+            APP_PATH="build/Release/Datwig.app"
           else
-            echo "Falling back to Swift Package Manager build..."
+            echo "Building via Swift PM fallback..."
             swift build -c release
-            APP_DIR="dist/Datwig.app/Contents"
-            mkdir -p "$APP_DIR/MacOS" "$APP_DIR/Resources"
-            cp Sources/Datwig/Info.plist "$APP_DIR/"
             BIN_PATH=$(swift build -c release --show-bin-path)
-            cp "$BIN_PATH/Datwig" "$APP_DIR/MacOS/"
-            chmod +x "$APP_DIR/MacOS/Datwig"
-            cd dist
-            zip -ry "Datwig-macOS.zip" Datwig.app
-            cd ..
+            APP_PATH="build/Release/Datwig.app"
+            mkdir -p "$APP_PATH/Contents/MacOS" "$APP_PATH/Contents/Resources"
+            cp "$BIN_PATH/Datwig" "$APP_PATH/Contents/MacOS/Datwig"
           fi
 
-          # Generate SHA256 checksum
+          # 2. Ensure bundle metadata & PkgInfo
+          cp Sources/Datwig/Info.plist "$APP_PATH/Contents/Info.plist"
+          echo -n "APPL????" > "$APP_PATH/Contents/PkgInfo"
+          chmod +x "$APP_PATH/Contents/MacOS/Datwig"
+
+          # 3. Apply ad-hoc code signature (required by macOS arm64 gatekeeper)
+          codesign --force --deep --sign - \
+            --entitlements Sources/Datwig/Datwig.entitlements \
+            "$APP_PATH"
+          codesign --verify --verbose "$APP_PATH"
+
+          # 4. Package Zip and native DMG
+          cd build/Release
+          zip -ry "../../dist/Datwig-macOS.zip" Datwig.app
+          hdiutil create -volname "Datwig" -srcfolder "Datwig.app" -ov -format UDZO "../../dist/Datwig.dmg"
+          cd ../..
+
+          # 5. Generate SHA256 checksums
           cd dist
           shasum -a 256 Datwig-macOS.zip > Datwig-macOS.zip.sha256
+          shasum -a 256 Datwig.dmg > Datwig.dmg.sha256
           cd ..
 
       - name: Publish GitHub Release
@@ -71,6 +82,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Datwig ${{ github.ref_name }}
           files: |
+            dist/Datwig.dmg
+            dist/Datwig.dmg.sha256
             dist/Datwig-macOS.zip
             dist/Datwig-macOS.zip.sha256
           draft: false
