@@ -144,12 +144,14 @@ swift run Datwig
 2. **Choose Source**:
    - **Drag & Drop**: Drag a folder, SD card volume, or camera files directly onto the drop box.
    - **Click Button**: Click **`[Select Directory...]`** (or press `⌘O`) and choose your folder or card root.
-3. **Monitor Progress**:
-   - Observe real-time scanning and file organization progress.
-   - View newly organized files appearing in the live activity stream.
-4. **Complete & Inspect**:
-   - Review the batch metrics summary card.
-   - Click **`[Show in Finder]`** to navigate straight to your newly sorted photo library.
+3. **Preview & Confirm**:
+   - Review the scanned folder plan, file count, destination path, and sample file timestamps.
+   - Click **`[Start Organizing]`** (or press `⌘↩`) when ready, or **`[Cancel / Choose Different Source]`** if you picked the wrong folder.
+4. **Monitor Progress**:
+   - Observe real-time file organization progress and live recent activity.
+5. **Complete & Inspect Log**:
+   - Review the batch metrics summary and filter/search the full per-file processing log.
+   - Click **`[Copy]`** or **`[Save...]`** to keep a `.txt` report, or **`[Show in Finder]`** to open your sorted photo library.
 
 ---
 
@@ -158,6 +160,7 @@ swift run Datwig
 | Shortcut | Action |
 |:---|:---|
 | `⌘O` | Open native file dialog to choose source |
+| `⌘↩` | Start organizing after preview confirmation |
 | `⌘,` | Open Preferences / Settings |
 | `⌘.` | Cancel active organization job |
 | `⌘R` | Reset view to organize another batch |

@@ -20,7 +20,7 @@ public enum MediaProcessingStatus: Sendable, Equatable {
 }
 
 /// Represents a media file discovered during scanning or queued for organization.
-public struct MediaItem: Identifiable, Sendable {
+public struct MediaItem: Identifiable, Sendable, Equatable {
     public let id: UUID
     public let sourceURL: URL
     public let fileName: String
@@ -58,6 +58,74 @@ public struct MediaItem: Identifiable, Sendable {
     /// File extension in lower case (e.g. "jpg", "cr3", "mp4").
     public var fileExtension: String {
         sourceURL.pathExtension.lowercased()
+    }
+
+    /// Formatted capture date string for display in previews and logs.
+    public var formattedCaptureDate: String {
+        guard let captureDate else { return "Unknown" }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: captureDate)
+    }
+}
+
+/// Summary of how many scanned files will go into a particular relative destination folder.
+public struct FolderPreviewBucket: Identifiable, Sendable, Equatable {
+    public var id: String { relativePath }
+    public let relativePath: String
+    public let fileCount: Int
+    public let totalBytes: Int64
+
+    public init(relativePath: String, fileCount: Int, totalBytes: Int64) {
+        self.relativePath = relativePath
+        self.fileCount = fileCount
+        self.totalBytes = totalBytes
+    }
+
+    public var formattedBytes: String {
+        ByteCountFormatter.string(fromByteCount: totalBytes, countStyle: .file)
+    }
+}
+
+/// Pre-copy confirmation summary shown after scanning a source directory or dropped files.
+public struct BatchPreview: Sendable, Equatable {
+    public let sourceURLs: [URL]
+    public let totalFiles: Int
+    public let totalBytes: Int64
+    public let folderBuckets: [FolderPreviewBucket]
+    public let sampleItems: [MediaItem]
+
+    public init(
+        sourceURLs: [URL],
+        totalFiles: Int,
+        totalBytes: Int64,
+        folderBuckets: [FolderPreviewBucket],
+        sampleItems: [MediaItem]
+    ) {
+        self.sourceURLs = sourceURLs
+        self.totalFiles = totalFiles
+        self.totalBytes = totalBytes
+        self.folderBuckets = folderBuckets
+        self.sampleItems = sampleItems
+    }
+
+    public var sourceDisplayName: String {
+        if sourceURLs.count == 1, let first = sourceURLs.first {
+            return first.lastPathComponent
+        }
+        return "\(sourceURLs.count) selected items"
+    }
+
+    public var sourceFullPathDisplay: String {
+        if sourceURLs.count == 1, let first = sourceURLs.first {
+            return first.path(percentEncoded: false)
+        }
+        return sourceURLs.map { $0.lastPathComponent }.joined(separator: ", ")
+    }
+
+    public var formattedTotalBytes: String {
+        ByteCountFormatter.string(fromByteCount: totalBytes, countStyle: .file)
     }
 }
 

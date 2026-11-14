@@ -232,11 +232,16 @@ public enum ExifDateParser {
     ]
 
     /// Parses an EXIF or ISO timestamp string into a `Date`.
-    public static func parse(_ string: String) -> Date? {
+    ///
+    /// - Parameters:
+    ///   - string: Timestamp string (e.g. `"2026:11:03 16:18:59"` or ISO-8601).
+    ///   - defaultTimeZone: Time zone assumed when the string itself contains no offset. Defaults to `.current`
+    ///     because camera EXIF `DateTimeOriginal` records local wall-clock time without a time zone offset.
+    public static func parse(_ string: String, defaultTimeZone: TimeZone = .current) -> Date? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
-        // Fast ISO 8601 attempts
+        // Fast ISO 8601 attempts (these always include explicit timezone or Z)
         if let date = iso8601WithMillis.date(from: trimmed) {
             return date
         }
@@ -244,11 +249,12 @@ public enum ExifDateParser {
             return date
         }
 
-        // Custom formatters with cached thread-local patterns
+        // Custom formatters: strings with explicit offsets (ZZZZZ/xxx/Z) override formatter.timeZone,
+        // while offset-free EXIF strings ("yyyy:MM:dd HH:mm:ss") use defaultTimeZone (.current).
         for pattern in customPatterns {
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.timeZone = defaultTimeZone
             formatter.dateFormat = pattern
             if let date = formatter.date(from: trimmed) {
                 return date
@@ -259,14 +265,14 @@ public enum ExifDateParser {
     }
 
     /// Parses IPTC separate date (`yyyyMMdd`) and time (`HHmmss` or `HHmmss+ZZZZ`) strings.
-    public static func parseIPTC(date: String, time: String?) -> Date? {
+    public static func parseIPTC(date: String, time: String?, defaultTimeZone: TimeZone = .current) -> Date? {
         let cleanDate = date.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: ":", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanTime = time?.replacingOccurrences(of: ":", with: "").trimmingCharacters(in: .whitespacesAndNewlines) ?? "000000"
 
         let combined = "\(cleanDate) \(cleanTime)"
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.timeZone = defaultTimeZone
 
         let patterns = [
             "yyyyMMdd HHmmssZZZZZ",

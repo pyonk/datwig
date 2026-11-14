@@ -147,7 +147,7 @@ public final class OrganizationSettings: @unchecked Sendable {
     }
 
     /// Calculates the destination relative subfolder path for a given capture date.
-    public func relativeSubdirectory(for date: Date) -> String {
+    public func relativeSubdirectory(for date: Date, timeZone: TimeZone = .current) -> String {
         let pattern: String
         switch formatPreset {
         case .custom:
@@ -158,6 +158,7 @@ public final class OrganizationSettings: @unchecked Sendable {
 
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
         formatter.dateFormat = pattern
         return formatter.string(from: date)
     }

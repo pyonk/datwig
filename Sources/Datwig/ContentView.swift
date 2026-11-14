@@ -1,14 +1,42 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
+
+private enum PreviewDisplayMode: String, CaseIterable, Identifiable {
+    case folders = "Folder Summary"
+    case files = "File Preview"
+
+    var id: String { rawValue }
+}
+
+private enum LogFilter: String, CaseIterable, Identifiable {
+    case all = "All"
+    case copied = "Copied"
+    case renamed = "Renamed"
+    case skipped = "Skipped"
+    case failed = "Errors"
+
+    var id: String { rawValue }
+}
 
 /// The primary user interface of Datwig featuring a drag-and-drop landing target,
-/// native file picker invocation, live progress tracking, and batch reports.
+/// native file picker invocation, pre-copy confirmation preview, live progress tracking,
+/// and searchable post-processing reports.
 public struct ContentView: View {
     @Bindable var organizer = DateOrganizer.shared
     @State private var isTargetedForDrop: Bool = false
     @State private var showingSettings: Bool = false
+    @State private var previewMode: PreviewDisplayMode = .folders
+    @State private var logFilter: LogFilter = .all
+    @State private var logSearchText: String = ""
+    @State private var didCopyLog: Bool = false
 
     public init() {}
+
+    private var appVersionLabel: String {
+        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.3"
+        return "v\(short)"
+    }
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -26,9 +54,30 @@ public struct ContentView: View {
             // Bottom Status / Destination Bar
             bottomBar
         }
-        .frame(minWidth: 580, idealWidth: 640, minHeight: 460, idealHeight: 520)
+        .frame(minWidth: 640, idealWidth: 720, minHeight: 520, idealHeight: 620)
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .onChange(of: organizer.settings.destinationURL) { _, _ in
+            organizer.refreshPreview()
+        }
+        .onChange(of: organizer.settings.formatPreset) { _, _ in
+            organizer.refreshPreview()
+        }
+        .onChange(of: organizer.settings.customFormatPattern) { _, _ in
+            organizer.refreshPreview()
+        }
+        .onChange(of: organizer.state) { _, newState in
+            switch newState {
+            case .ready:
+                previewMode = .folders
+            case .completed, .cancelled:
+                logFilter = .all
+                logSearchText = ""
+                didCopyLog = false
+            default:
+                break
+            }
         }
     }
 
@@ -42,7 +91,7 @@ public struct ContentView: View {
                 HStack(spacing: 6) {
                     Text("Datwig")
                         .font(.headline)
-                    Text("v1.0")
+                    Text(appVersionLabel)
                         .font(.caption2)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
@@ -90,6 +139,9 @@ public struct ContentView: View {
         case .scanning(let count):
             scanningView(count: count)
 
+        case .ready(let preview):
+            readyConfirmationView(preview: preview)
+
         case .processing(let current, let total, let currentFileName):
             processingView(current: current, total: total, fileName: currentFileName)
 
@@ -128,12 +180,16 @@ public struct ContentView: View {
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isTargetedForDrop)
 
                     VStack(spacing: 6) {
-                        Text(isTargetedForDrop ? "Release to Ingest Media" : "Drop Media Files or Folders Here")
+                        Text(isTargetedForDrop ? "Release to Preview Media" : "Drop Media Files or Folders Here")
                             .font(.title3.weight(.medium))
 
                         Text("Drag an SD card, camera DCIM folder, or video/image files")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+
+                        Text("Files will be scanned and previewed before any copy begins")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
                     }
 
                     HStack(spacing: 12) {
@@ -187,7 +243,7 @@ public struct ContentView: View {
             Text("Scanning Source...")
                 .font(.title3.weight(.medium))
 
-            Text("Discovered \(count) media file\(count == 1 ? "" : "s") so far")
+            Text("Discovered \(count) media file\(count == 1 ? "" : "s") so far — no files modified yet")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
@@ -198,6 +254,202 @@ public struct ContentView: View {
             .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Ready Confirmation View (Dry-Run Preview)
+
+    private func readyConfirmationView(preview: BatchPreview) -> some View {
+        VStack(spacing: 14) {
+            // Source & Target Plan Summary Card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "checkmark.shield.fill")
+                        .font(.title2)
+                        .foregroundStyle(Color.accentColor)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 8) {
+                            Text("Ready to Organize: \(preview.sourceDisplayName)")
+                                .font(.headline)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+
+                            Spacer()
+
+                            Text("\(preview.totalFiles) file\(preview.totalFiles == 1 ? "" : "s") • \(preview.formattedTotalBytes)")
+                                .font(.caption.bold())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.accentColor.opacity(0.14))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+
+                        Text("Source: \(preview.sourceFullPathDisplay)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                }
+
+                Divider()
+
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Structure: \(organizer.settings.formatPreset.displayName)")
+                            .font(.caption.weight(.medium))
+                        Text("Duplicates: \(organizer.settings.duplicatePolicy.rawValue)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Button("Adjust Settings...") {
+                        showingSettings = true
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+            .padding(14)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 24)
+            .padding(.top, 16)
+
+            // Preview Mode Switcher
+            HStack {
+                Picker("Preview Mode", selection: $previewMode) {
+                    Text("Folder Plan (\(preview.folderBuckets.count))")
+                        .tag(PreviewDisplayMode.folders)
+                    Text("File Preview (\(preview.totalFiles))")
+                        .tag(PreviewDisplayMode.files)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 280)
+
+                Spacer()
+
+                Text("Non-destructive copy")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 24)
+
+            // Scrollable Preview Table
+            Group {
+                if previewMode == .folders {
+                    ScrollView {
+                        LazyVStack(spacing: 6) {
+                            ForEach(preview.folderBuckets) { bucket in
+                                HStack(spacing: 10) {
+                                    Image(systemName: "folder.fill")
+                                        .foregroundStyle(Color.accentColor)
+                                        .frame(width: 18)
+
+                                    Text(bucket.relativePath)
+                                        .font(.system(.caption, design: .monospaced).weight(.medium))
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+
+                                    Spacer()
+
+                                    Text("\(bucket.fileCount) file\(bucket.fileCount == 1 ? "" : "s")")
+                                        .font(.caption.weight(.medium))
+                                        .foregroundStyle(.primary)
+
+                                    Text(bucket.formattedBytes)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 68, alignment: .trailing)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
+                                .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                        .padding(10)
+                    }
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 6) {
+                            ForEach(preview.sampleItems) { item in
+                                let targetSubdir = organizer.settings.relativeSubdirectory(for: item.captureDate ?? Date())
+                                HStack(spacing: 10) {
+                                    Image(systemName: "photo")
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 18)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.fileName)
+                                            .font(.caption.weight(.medium))
+                                            .lineLimit(1)
+                                            .truncationMode(.middle)
+                                        Text("\(item.formattedCaptureDate) • \(item.dateSource?.rawValue ?? "Unknown")")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Text("→ \(targetSubdir)")
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .foregroundStyle(Color.accentColor)
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+
+                            if preview.totalFiles > preview.sampleItems.count {
+                                Text("Showing first \(preview.sampleItems.count) of \(preview.totalFiles) files. All files will be organized.")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.vertical, 6)
+                            }
+                        }
+                        .padding(10)
+                    }
+                }
+            }
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.35))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color.secondary.opacity(0.18), lineWidth: 1)
+            )
+            .padding(.horizontal, 24)
+
+            // Confirmation Action Buttons
+            HStack(spacing: 12) {
+                Button("Cancel / Choose Different Source") {
+                    organizer.reset()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+
+                Spacer()
+
+                Button {
+                    organizer.confirmAndStart()
+                } label: {
+                    Label("Start Organizing (\(preview.totalFiles) file\(preview.totalFiles == 1 ? "" : "s"))", systemImage: "play.fill")
+                        .padding(.horizontal, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.return, modifiers: .command)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+        }
     }
 
     // MARK: - Processing View
@@ -294,21 +546,30 @@ public struct ContentView: View {
     // MARK: - Completed View
 
     private func completedView(report: OrganizationReport) -> some View {
-        VStack(spacing: 22) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.green)
+        VStack(spacing: 14) {
+            // Compact Header Summary
+            HStack(spacing: 12) {
+                Image(systemName: report.errorCount > 0 ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
+                    .font(.system(size: 36))
+                    .foregroundStyle(report.errorCount > 0 ? .orange : .green)
 
-            VStack(spacing: 6) {
-                Text("Organization Completed")
-                    .font(.title2.bold())
-                Text("Organized \(report.copiedCount + report.renamedCount) files into chronological tree in \(report.formattedDuration)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Organization Completed")
+                        .font(.title3.bold())
+                    Text("Processed \(report.totalFound) files into \(report.destinationDirectory.lastPathComponent) in \(report.formattedDuration) (\(report.formattedTotalBytes))")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer()
             }
+            .padding(.horizontal, 24)
+            .padding(.top, 16)
 
             // Metric Cards Grid
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 statBox(title: "Copied", value: "\(report.copiedCount)", icon: "arrow.down.doc.fill", color: .blue)
                 statBox(title: "Renamed", value: "\(report.renamedCount)", icon: "doc.badge.plus", color: .orange)
                 statBox(title: "Skipped", value: "\(report.skippedCount)", icon: "equal.circle.fill", color: .purple)
@@ -316,9 +577,14 @@ public struct ContentView: View {
                     statBox(title: "Errors", value: "\(report.errorCount)", icon: "exclamationmark.triangle.fill", color: .red)
                 }
             }
-            .padding(.horizontal, 28)
+            .padding(.horizontal, 24)
 
-            HStack(spacing: 14) {
+            // Filterable & Exportable Post-Processing Log
+            processingLogSection(destinationRoot: report.destinationDirectory)
+                .padding(.horizontal, 24)
+
+            // Bottom Primary Actions
+            HStack(spacing: 12) {
                 Button {
                     NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: report.destinationDirectory.path(percentEncoded: false))
                 } label: {
@@ -334,50 +600,294 @@ public struct ContentView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.large)
             }
-            .padding(.top, 10)
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
     }
 
     private func statBox(title: String, value: String, icon: String, color: Color) -> some View {
-        VStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: icon)
+                .font(.title3)
                 .foregroundStyle(color)
-            Text(value)
-                .font(.title3.bold())
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value)
+                    .font(.headline.bold())
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - Post-Processing Detailed Log Section
+
+    private var filteredLogItems: [MediaItem] {
+        let query = logSearchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+        return organizer.processedItems.filter { item in
+            let matchesFilter: Bool
+            switch logFilter {
+            case .all:
+                matchesFilter = true
+            case .copied:
+                if case .copied = item.status { matchesFilter = true } else { matchesFilter = false }
+            case .renamed:
+                if case .renamed = item.status { matchesFilter = true } else { matchesFilter = false }
+            case .skipped:
+                if case .skipped = item.status { matchesFilter = true } else { matchesFilter = false }
+            case .failed:
+                if case .failed = item.status { matchesFilter = true } else { matchesFilter = false }
+            }
+
+            guard matchesFilter else { return false }
+            guard !query.isEmpty else { return true }
+
+            let haystack = [
+                item.fileName,
+                item.formattedCaptureDate,
+                item.dateSource?.rawValue ?? "",
+                item.targetURL?.path(percentEncoded: false) ?? "",
+                item.sourceURL.path(percentEncoded: false)
+            ].joined(separator: " ").lowercased()
+
+            return haystack.contains(query)
+        }
+    }
+
+    private func processingLogSection(destinationRoot: URL) -> some View {
+        let items = filteredLogItems
+
+        return VStack(spacing: 8) {
+            // Log Toolbar: Filter + Search + Copy/Save
+            HStack(spacing: 8) {
+                Picker("Filter", selection: $logFilter) {
+                    ForEach(LogFilter.allCases) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 300)
+
+                HStack(spacing: 4) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("Search log...", text: $logSearchText)
+                        .textFieldStyle(.plain)
+                        .font(.caption)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(nsColor: .textBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(Color.secondary.opacity(0.25), lineWidth: 1)
+                )
+
+                Button {
+                    copyLogToPasteboard()
+                } label: {
+                    Label(didCopyLog ? "Copied" : "Copy", systemImage: didCopyLog ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+                Button {
+                    saveLogToFile()
+                } label: {
+                    Label("Save...", systemImage: "square.and.arrow.down")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+
+            // Scrollable File Log List
+            Group {
+                if items.isEmpty {
+                    VStack(spacing: 6) {
+                        Text(organizer.processedItems.isEmpty ? "No files were processed." : "No log entries match the current filter.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 5) {
+                            ForEach(items) { item in
+                                logItemRow(item, destinationRoot: destinationRoot)
+                            }
+                        }
+                        .padding(8)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.35))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color.secondary.opacity(0.18), lineWidth: 1)
+            )
+        }
+    }
+
+    private func logItemRow(_ item: MediaItem, destinationRoot: URL) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconForStatus(item.status))
+                .foregroundStyle(colorForStatus(item.status))
+                .frame(width: 16)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(item.fileName)
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Text(badgeTextForStatus(item.status))
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(colorForStatus(item.status).opacity(0.15))
+                        .foregroundStyle(colorForStatus(item.status))
+                        .clipShape(Capsule())
+                }
+
+                Text(detailLineForLogItem(item, destinationRoot: destinationRoot))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(item.formattedCaptureDate)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                if let source = item.dateSource {
+                    Text(source.rawValue)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func badgeTextForStatus(_ status: MediaProcessingStatus) -> String {
+        switch status {
+        case .copied: return "COPIED"
+        case .renamed: return "RENAMED"
+        case .skipped: return "SKIPPED"
+        case .failed: return "ERROR"
+        case .pending, .copying: return "PENDING"
+        }
+    }
+
+    private func detailLineForLogItem(_ item: MediaItem, destinationRoot: URL) -> String {
+        let rootPath = destinationRoot.path(percentEncoded: false)
+        func relativeTarget(_ url: URL) -> String {
+            let full = url.path(percentEncoded: false)
+            if full.hasPrefix(rootPath) {
+                let stripped = String(full.dropFirst(rootPath.count))
+                return stripped.hasPrefix("/") ? String(stripped.dropFirst()) : stripped
+            }
+            return full
+        }
+
+        switch item.status {
+        case .copied(let dest):
+            return "→ \(relativeTarget(dest))"
+        case .renamed(let dest):
+            return "→ \(relativeTarget(dest)) (renamed to avoid conflict)"
+        case .skipped(let reason):
+            if let target = item.targetURL {
+                return "\(reason) (\(relativeTarget(target)))"
+            }
+            return reason
+        case .failed(let err):
+            return "Error: \(err)"
+        case .pending, .copying:
+            return item.sourceURL.path(percentEncoded: false)
+        }
+    }
+
+    private func copyLogToPasteboard() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(organizer.exportLogText(), forType: .string)
+        didCopyLog = true
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            didCopyLog = false
+        }
+    }
+
+    private func saveLogToFile() {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+
+        let panel = NSSavePanel()
+        panel.title = "Save Datwig Processing Log"
+        panel.allowedContentTypes = [.plainText]
+        panel.canCreateDirectories = true
+        panel.nameFieldStringValue = "datwig-log-\(formatter.string(from: Date())).txt"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            try? organizer.exportLogText().write(to: url, atomically: true, encoding: .utf8)
+        }
     }
 
     // MARK: - Cancelled & Failed Views
 
     private var cancelledView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "stop.circle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.orange)
+        VStack(spacing: 14) {
+            HStack(spacing: 12) {
+                Image(systemName: "stop.circle.fill")
+                    .font(.system(size: 36))
+                    .foregroundStyle(.orange)
 
-            Text("Organization Cancelled")
-                .font(.title3.bold())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Organization Cancelled")
+                        .font(.title3.bold())
+                    Text("The operation was stopped. Source files are untouched and completed copies remain intact.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
 
-            Text("The operation was stopped by user. Partial copies remain safely intact.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 18)
+
+            if !organizer.processedItems.isEmpty {
+                processingLogSection(destinationRoot: organizer.settings.destinationURL)
+                    .padding(.horizontal, 24)
+            } else {
+                Spacer()
+            }
 
             Button("Start Over") {
                 organizer.reset()
             }
             .buttonStyle(.borderedProminent)
-            .padding(.top, 8)
+            .controlSize(.large)
+            .padding(.bottom, 18)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

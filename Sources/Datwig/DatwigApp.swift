@@ -6,13 +6,20 @@ import AppKit
 struct DatwigApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    private var isReadyToStart: Bool {
+        if case .ready = DateOrganizer.shared.state {
+            return true
+        }
+        return false
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
         .windowStyle(.titleBar)
         .windowToolbarStyle(.unified(showsTitle: true))
-        .defaultSize(width: 640, height: 500)
+        .defaultSize(width: 720, height: 620)
         .commands {
             // Standard File Commands
             CommandGroup(replacing: .newItem) {
@@ -24,6 +31,14 @@ struct DatwigApp: App {
 
             // Organization Control Commands
             CommandMenu("Organize") {
+                Button("Start Organizing") {
+                    DateOrganizer.shared.confirmAndStart()
+                }
+                .keyboardShortcut(.return, modifiers: .command)
+                .disabled(!isReadyToStart)
+
+                Divider()
+
                 Button("Cancel Current Operation") {
                     DateOrganizer.shared.cancel()
                 }

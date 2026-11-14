@@ -3,13 +3,13 @@ import XCTest
 
 final class ExifParserTests: XCTestCase {
 
-    func testStandardExifDateFormat() {
+    func testStandardExifDateFormatUsesCurrentTimeZoneByDefault() {
         let dateString = "2024:08:15 14:30:25"
         let parsed = ExifDateParser.parse(dateString)
         XCTAssertNotNil(parsed, "Standard EXIF date string should be parsed successfully")
 
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        calendar.timeZone = .current
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: parsed!)
 
         XCTAssertEqual(components.year, 2024)
@@ -18,6 +18,28 @@ final class ExifParserTests: XCTestCase {
         XCTAssertEqual(components.hour, 14)
         XCTAssertEqual(components.minute, 30)
         XCTAssertEqual(components.second, 25)
+    }
+
+    func testExifLocalTimePreservedAcrossTimeZonesRegression() throws {
+        // Regression test for JST (UTC+9) late-afternoon photo shifting to next day when wrongly parsed as UTC
+        let jst = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+        let dateString = "2026:11:03 16:18:59"
+
+        let parsed = try XCTUnwrap(ExifDateParser.parse(dateString, defaultTimeZone: jst))
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = jst
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: parsed)
+        XCTAssertEqual(components.year, 2026)
+        XCTAssertEqual(components.month, 11)
+        XCTAssertEqual(components.day, 3)
+        XCTAssertEqual(components.hour, 16)
+        XCTAssertEqual(components.minute, 18)
+        XCTAssertEqual(components.second, 59)
+
+        let settings = OrganizationSettings()
+        settings.formatPreset = .yearThenDate
+        XCTAssertEqual(settings.relativeSubdirectory(for: parsed, timeZone: jst), "2026/2026-11-03")
     }
 
     func testISO8601WithTimezoneAndMillis() {
@@ -36,35 +58,46 @@ final class ExifParserTests: XCTestCase {
         XCTAssertEqual(components.minute, 45)
     }
 
-    func testStandardExifWithTimezoneOffset() {
+    func testStandardExifWithTimezoneOffset() throws {
         let offsetString = "2024:05:01 09:15:00+02:00"
-        let parsed = ExifDateParser.parse(offsetString)
-        XCTAssertNotNil(parsed, "EXIF with timezone offset should parse")
+        let parsed = try XCTUnwrap(ExifDateParser.parse(offsetString), "EXIF with timezone offset should parse")
+
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let components = utcCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: parsed)
+        XCTAssertEqual(components.year, 2024)
+        XCTAssertEqual(components.month, 5)
+        XCTAssertEqual(components.day, 1)
+        XCTAssertEqual(components.hour, 7)
+        XCTAssertEqual(components.minute, 15)
     }
 
-    func testDateOnlyFormat() {
+    func testDateOnlyFormat() throws {
         let dateOnly = "2022:11:30"
-        let parsed = ExifDateParser.parse(dateOnly)
-        XCTAssertNotNil(parsed)
+        let jst = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+        let parsed = try XCTUnwrap(ExifDateParser.parse(dateOnly, defaultTimeZone: jst))
 
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let components = calendar.dateComponents([.year, .month, .day], from: parsed!)
+        calendar.timeZone = jst
+        let components = calendar.dateComponents([.year, .month, .day], from: parsed)
 
         XCTAssertEqual(components.year, 2022)
         XCTAssertEqual(components.month, 11)
         XCTAssertEqual(components.day, 30)
     }
 
-    func testIPTCDateAndTimeParsing() {
+    func testIPTCDateAndTimeParsing() throws {
         let datePart = "20240410"
         let timePart = "123000"
-        let parsed = ExifDateParser.parseIPTC(date: datePart, time: timePart)
-        XCTAssertNotNil(parsed, "IPTC separated date and time should parse")
+        let jst = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+        let parsed = try XCTUnwrap(
+            ExifDateParser.parseIPTC(date: datePart, time: timePart, defaultTimeZone: jst),
+            "IPTC separated date and time should parse"
+        )
 
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: parsed!)
+        calendar.timeZone = jst
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: parsed)
 
         XCTAssertEqual(components.year, 2024)
         XCTAssertEqual(components.month, 4)
